@@ -2,7 +2,9 @@ import { getBorderCSS, getTypoCSS, isValidCSS } from '../../../../bpl-tools/util
 import { mobileBreakpoint, tabBreakpoint } from '../../../../bpl-tools/utils/data';
 
 const Style = ({ attributes, id }) => {
-	const { alignment, typography, border, videoSize } = attributes;
+	const { alignment, typography, border, videoSize, options } = attributes;
+
+	const { shadowControl } = options;
 
 	const mainSl = `#${id}`;
 	const blockSl = `${mainSl} .svpVideoPlayer`;
@@ -18,6 +20,9 @@ const Style = ({ attributes, id }) => {
 		}
 		${blockSl}{
 			justify-content: ${alignment};
+		}
+		${blockSl} .plyr__controls{
+			background: ${shadowControl ? '' : 'transparent'};
 		}
 		${videoSl}{
 			${isValidCSS('width', videoSize?.width['desktop'])}

@@ -65,7 +65,8 @@
             {
               "source": "",
               "label": "",
-              "srclang": ""
+              "srclang": "",
+              "default": false
             }
           ]
         }

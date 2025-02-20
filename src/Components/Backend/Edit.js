@@ -34,7 +34,7 @@ const Edit = props => {
 
 			{/* Common file er main plugin file import here */}
 			{
-				playlist ? <Playlist attributes={attributes} /> : <SuperPlayer attributes={attributes} />
+				playlist ? <Playlist attributes={attributes} /> : <SuperPlayer isAdmin={true} attributes={attributes} />
 			}
 		</div>
 	</>;

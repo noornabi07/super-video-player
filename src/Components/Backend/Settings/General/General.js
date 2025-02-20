@@ -45,7 +45,6 @@ const General = (props) => {
 				label={__("Repeat", "svp")}
 				checked={repeat}
 				onChange={(val) => setAttributes({ options: updateData(options, val, 'repeat') })}
-				help={__("Specify how the video will start over again, every time it is finished", "svp")}
 			/>
 
 			<ToggleControl
@@ -53,7 +52,6 @@ const General = (props) => {
 				label={__("Muted", "svp")}
 				checked={muted}
 				onChange={(val) => setAttributes({ options: updateData(options, val, 'muted') })}
-				help={__("Turn On if you want the audio output of the video should be muted.", "svp")}
 			/>
 
 			<ToggleControl
@@ -61,7 +59,6 @@ const General = (props) => {
 				label={__("Tooltips", "svp")}
 				checked={toolTip}
 				onChange={(val) => setAttributes({ options: updateData(options, val, 'toolTip') })}
-				help={__("Display control labels as tooltips on :hover & :focus", "svp")}
 			/>
 
 			<ToggleControl

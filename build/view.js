@@ -672,8 +672,12 @@ const Style = ({
     alignment,
     typography,
     border,
-    videoSize
+    videoSize,
+    options
   } = attributes;
+  const {
+    shadowControl
+  } = options;
   const mainSl = `#${id}`;
   const blockSl = `${mainSl} .svpVideoPlayer`;
   const videoSl = `${blockSl} .plyr--video`;
@@ -688,6 +692,9 @@ const Style = ({
 		}
 		${blockSl}{
 			justify-content: ${alignment};
+		}
+		${blockSl} .plyr__controls{
+			background: ${shadowControl ? '' : 'transparent'};
 		}
 		${videoSl}{
 			${(0,_bpl_tools_utils_getCSS__WEBPACK_IMPORTED_MODULE_0__.isValidCSS)('width', videoSize?.width['desktop'])}
@@ -730,7 +737,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const SuperPlayer = ({
-  attributes
+  attributes,
+  isAdmin = false
 }) => {
   const {
     options,
@@ -747,82 +755,123 @@ const SuperPlayer = ({
     seekTime,
     toolTip
   } = options;
-  // const [player, setPlayer] = useState(null);
-
   const playerRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
 
   // Ensure at least one video exists
   const video = videos?.[0] || {};
   const videoSrc = video?.src || "";
   const controlItems = Object.keys(controls).filter(key => controls[key]);
+  const instanceRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  const defaultCaptionIndex = video?.captions?.findIndex(caption => caption.default);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (window.Plyr && playerRef.current) {
-      const player = new window.Plyr(playerRef.current.querySelector('video'), {
-        controls: controlItems,
-        autoplay: autoPlay,
-        muted,
-        clickToPlay,
-        volume,
-        loop: {
-          active: repeat
-        },
-        hideControls: isControl,
-        captions: {
-          active: true,
-          update: true
-        },
-        tooltips: {
-          controls: toolTip
-        },
-        seekTime: seekTime || 10,
-        urls: {
-          download: video.customDownloadButton ? video.customDownloadUrl : videoSrc
-        }
-      });
-      let ext = (0,_utils_functions__WEBPACK_IMPORTED_MODULE_1__.getFileExtension)(videoSrc);
-      if (ext === "m3u8" && window.Hls?.isSupported()) {
-        // For more Hls.js options, see https://github.com/dailymotion/hls.js
-        const hls = new Hls();
-        hls.loadSource(videoSrc);
-        hls.attachMedia(playerRef.current?.querySelector("video"));
-        //   window.hls = hls;
-
-        // Handle changing captions
-        player?.on("languagechange", () => {
-          setTimeout(() => hls.subtitleTrack = player.currentTrack, 50);
+      const html = playerRef.current.querySelector('.hidden')?.innerHTML;
+      if (html) {
+        playerRef.current.querySelector('.visible').innerHTML = '';
+        playerRef.current.querySelector('.visible').innerHTML = html;
+      }
+      const videoTag = playerRef.current.querySelector('.visible video');
+      setTimeout(() => {
+        const player = new window.Plyr(videoTag, {
+          controls: controlItems,
+          autoplay: autoPlay,
+          muted,
+          clickToPlay,
+          volume: muted ? 0 : volume,
+          loop: {
+            active: repeat
+          },
+          hideControls: isControl,
+          captions: {
+            active: true,
+            update: true
+          },
+          tooltips: {
+            controls: toolTip
+          },
+          seekTime: seekTime || 10,
+          urls: {
+            download: video.customDownloadButton ? video.customDownloadUrl : videoSrc
+          },
+          storage: {
+            enabled: !autoPlay,
+            key: 'plyr'
+          }
         });
-      }
-      if (ext === "mpd") {
-        const dash = window.dashjs.MediaPlayer().create();
-        const video = playerRef.current?.querySelector("video");
-        dash.initialize(video, videoSrc, true);
-      }
+        instanceRef.current = player;
+        window.player = instanceRef.current;
+        let ext = (0,_utils_functions__WEBPACK_IMPORTED_MODULE_1__.getFileExtension)(videoSrc);
+        if (ext === "m3u8" && window.Hls?.isSupported()) {
+          // For more Hls.js options, see https://github.com/dailymotion/hls.js
+          const hls = new Hls();
+          hls.loadSource(videoSrc);
+          hls.attachMedia(playerRef.current?.querySelector("video"));
+          //   window.hls = hls;
+
+          // Handle changing captions
+          player?.on("languagechange", () => {
+            setTimeout(() => hls.subtitleTrack = player.currentTrack, 50);
+          });
+        }
+        if (ext === "mpd") {
+          const dash = window.dashjs.MediaPlayer().create();
+          const video = playerRef.current?.querySelector("video");
+          dash.initialize(video, videoSrc, true);
+        }
+      }, 0);
       return () => {
-        player.destroy();
+        instanceRef.current.destroy();
       };
     }
-  }, [videos, videoSrc, controls, autoPlay, muted, volume, repeat, toolTip, seekTime, clickToPlay, isControl, video.customDownloadButton, video.customDownloadUrl]);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+  }, [video, videoSrc, controls, autoPlay, muted, volume, repeat, toolTip, seekTime, clickToPlay, isControl, video.customDownloadButton, video.customDownloadUrl]);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
     className: "svpVideoPlayer",
     ref: playerRef,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("video", {
-      controls: true,
-      crossOrigin: "anonymous",
-      "data-poster": video.poster,
-      children: [video?.qualities?.length > 0 ? video.qualities.map((quality, qIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
-        src: quality.source,
-        type: "video/mp4"
-      }, qIndex)) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
+    children: [isAdmin && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      className: "hidden",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("video", {
+        controls: true,
+        crossOrigin: "anonymous",
+        "data-poster": video.poster,
         src: videoSrc,
-        type: "video/mp4"
-      }), video?.captions?.length > 0 && video.captions.map((caption, cIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("track", {
-        kind: "captions",
-        srcLang: caption.srclang,
-        label: caption.label,
-        src: caption.source,
-        default: cIndex === 0 // First caption is default
-      }, cIndex))]
-    })
+        children: [video?.qualities?.length > 0 ? video.qualities.map((quality, qIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
+          src: quality.source,
+          size: quality.size,
+          type: "video/mp4"
+        }, qIndex)) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
+          src: videoSrc,
+          type: "video/mp4"
+        }), video?.captions?.length > 0 && video.captions.map((caption, cIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("track", {
+          kind: "captions",
+          srcLang: caption.srclang,
+          label: caption.label,
+          src: caption.source,
+          default: defaultCaptionIndex === cIndex
+        }, cIndex))]
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      className: "visible",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("video", {
+        controls: true,
+        crossOrigin: "anonymous",
+        "data-poster": video.poster,
+        src: videoSrc,
+        children: [video?.qualities?.length > 0 ? video.qualities.map((quality, qIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
+          src: quality.source,
+          size: quality.size,
+          type: "video/mp4"
+        }, qIndex)) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("source", {
+          src: videoSrc,
+          type: "video/mp4"
+        }), video?.captions?.length > 0 && video.captions.map((caption, cIndex) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("track", {
+          kind: "captions",
+          srcLang: caption.srclang,
+          label: caption.label,
+          src: caption.source,
+          default: cIndex === 0 // First caption is default
+        }, cIndex))]
+      })
+    })]
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (SuperPlayer);

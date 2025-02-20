@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import { InlineMediaUpload } from '../../../../../../bpl-tools/Components';
 import { __ } from '@wordpress/i18n';
-import { TextControl } from '@wordpress/components';
+import { TextControl, ToggleControl } from '@wordpress/components';
 
 export const VideoCaptionPanel = ({ attributes,
     setAttributes,
@@ -11,12 +11,31 @@ export const VideoCaptionPanel = ({ attributes,
 
     const items = attributes[arrKey];
 
+    // const updateQuality = (property, val, childProperty = null) => {
+    //     const newItems = produce(attributes[arrKey], (draft) => {
+    //         if (null !== childProperty) {
+    //             draft[index][property][childProperty] = val;
+    //         } else {
+    //             draft[index][property] = val;
+    //         }
+    //     });
+    //     setAttributes({ [arrKey]: newItems });
+    //     setActiveIndex && setActiveIndex(index);
+    // };
+
     const updateQuality = (property, val, childProperty = null) => {
         const newItems = produce(attributes[arrKey], (draft) => {
-            if (null !== childProperty) {
-                draft[index][property][childProperty] = val;
+            if (property === "default" && val) {
+                // If user sets this caption as default, set all others to false
+                draft.forEach((item, i) => {
+                    item.default = i === index;
+                });
             } else {
-                draft[index][property] = val;
+                if (childProperty !== null) {
+                    draft[index][property][childProperty] = val;
+                } else {
+                    draft[index][property] = val;
+                }
             }
         });
         setAttributes({ [arrKey]: newItems });
@@ -51,6 +70,13 @@ export const VideoCaptionPanel = ({ attributes,
             value={items[index]?.srclang}
             onChange={(v) => updateQuality("srclang", v)}
             type="text"
+        />
+
+        <ToggleControl
+            className="mt15"
+            label={__("Set as Default", "svp")}
+            checked={items[index]?.default || false}
+            onChange={(v) => updateQuality("default", v)}
         />
 
     </>

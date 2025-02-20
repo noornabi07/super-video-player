@@ -47,7 +47,7 @@ export const VideoQualityPanel = ({ attributes,
                 { label: "2160p (4K)", value: 2160 },
                 { label: "4320p (8K)", value: 4320 },
             ]}
-            value={items[index]?.size}
+            value={items[index]?.size || 720}
             onChange={(v) => updateQuality("size", v)}
         />
 
